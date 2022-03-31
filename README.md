@@ -2,6 +2,6 @@
 
 Bernardo Carmezim
 Catarina Lima
-Francisco Cost
-Sebastião Lea
+Francisco Costa
+Sebastião Leal
 Tomás Santos
