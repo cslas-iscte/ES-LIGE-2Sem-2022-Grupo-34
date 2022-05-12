@@ -82,18 +82,18 @@ public class BronKerboschCliqueFinder<V, E>
             }
             allMaximalCliques = new ArrayList<>();
 
-            long nanosTimeLimit;
-            try {
-                nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
-            } catch (ArithmeticException ignore) {
-                nanosTimeLimit = Long.MAX_VALUE;
-            }
-
-            findCliques(
+            long nanosTimeLimit = nanosTimeLimit_Refactoring();
+			findCliques(
                 new ArrayList<>(), new ArrayList<>(graph.vertexSet()), new ArrayList<>(),
                 nanosTimeLimit);
         }
     }
+
+	private long nanosTimeLimit_Refactoring() {
+		long nanosTimeLimit;
+		nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
+		return nanosTimeLimit;
+	}
 
     private void findCliques(
         List<V> potentialClique, List<V> candidates, List<V> alreadyFound,

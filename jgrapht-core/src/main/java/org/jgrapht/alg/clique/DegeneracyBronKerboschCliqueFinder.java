@@ -92,14 +92,8 @@ public class DegeneracyBronKerboschCliqueFinder<V, E>
             }
             allMaximalCliques = new ArrayList<>();
 
-            long nanosTimeLimit;
-            try {
-                nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
-            } catch (ArithmeticException ignore) {
-                nanosTimeLimit = Long.MAX_VALUE;
-            }
-
-            List<V> ordering = new ArrayList<>();
+            long nanosTimeLimit = nanosTimeLimit_Refactoring();
+			List<V> ordering = new ArrayList<>();
             new DegeneracyOrderingIterator<V, E>(graph).forEachRemaining(ordering::add);
 
             int n = ordering.size();
@@ -136,5 +130,11 @@ public class DegeneracyBronKerboschCliqueFinder<V, E>
             }
         }
     }
+
+	private long nanosTimeLimit_Refactoring() {
+		long nanosTimeLimit;
+		nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
+		return nanosTimeLimit;
+	}
 
 }
