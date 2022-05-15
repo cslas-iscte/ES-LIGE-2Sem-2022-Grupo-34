@@ -244,14 +244,7 @@ class BlossomVInitializer<V, E>
      */
     public BlossomVEdge addEdge(BlossomVNode from, BlossomVNode to, double slack, int pos)
     {
-        BlossomVEdge edge = new BlossomVEdge(pos);
-        edge.slack = slack;
-        edge.headOriginal[0] = to;
-        edge.headOriginal[1] = from;
-        // the call to the BlossomVNode#addEdge implies setting head[dir] reference
-        from.addEdge(edge, 0);
-        to.addEdge(edge, 1);
-        return edge;
+        return from.addEdge_refactoring(to, slack, pos);
     }
 
     /**
@@ -491,8 +484,7 @@ class BlossomVInitializer<V, E>
     private void addToHead(
         AddressableHeap<Double, BlossomVEdge> heap, BlossomVNode node, BlossomVEdge bestEdge)
     {
-        bestEdge.handle = heap.insert(bestEdge.slack, bestEdge);
-        node.bestEdge = bestEdge;
+        bestEdge.addToHead_refactoring(heap, node);
     }
 
     /**

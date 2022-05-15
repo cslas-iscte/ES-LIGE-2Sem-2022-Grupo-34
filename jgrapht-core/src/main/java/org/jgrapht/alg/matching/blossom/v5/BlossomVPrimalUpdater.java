@@ -727,24 +727,7 @@ class BlossomVPrimalUpdater<V, E>
      */
     private void expandInfinityNode(BlossomVNode infinityNode, BlossomVTree tree)
     {
-        double eps = tree.eps;
-        for (BlossomVNode.IncidentEdgeIterator iterator = infinityNode.incidentEdgesIterator();
-            iterator.hasNext();)
-        {
-            BlossomVEdge edge = iterator.next();
-            BlossomVNode opposite = edge.head[iterator.getDir()];
-            if (!opposite.isMarked) {
-                edge.slack += eps; // since edge's label changes to inf and this is a boundary edge
-                if (opposite.isPlusNode()) {
-                    // if this node is marked => it's a blossom node => this edge has been processed
-                    // already
-                    if (opposite.tree != tree) {
-                        opposite.tree.currentEdge.removeFromCurrentMinusPlusHeap(edge);
-                    }
-                    opposite.tree.addPlusInfinityEdge(edge);
-                }
-            }
-        }
+        tree.expandInfinityNode_refactoring(infinityNode);
     }
 
     /**

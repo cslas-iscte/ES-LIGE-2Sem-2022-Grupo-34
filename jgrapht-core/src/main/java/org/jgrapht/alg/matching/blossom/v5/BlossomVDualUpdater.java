@@ -156,30 +156,7 @@ class BlossomVDualUpdater<V, E>
      */
     private double getEps(BlossomVTree tree)
     {
-        double eps = KolmogorovWeightedPerfectMatching.INFINITY;
-        // check minimum slack of the plus-infinity edges
-        if (!tree.plusInfinityEdges.isEmpty()) {
-            BlossomVEdge edge = tree.plusInfinityEdges.findMin().getValue();
-            if (edge.slack < eps) {
-                eps = edge.slack;
-            }
-        }
-        // check minimum dual variable of the "-" blossoms
-        if (!tree.minusBlossoms.isEmpty()) {
-            BlossomVNode node = tree.minusBlossoms.findMin().getValue();
-            if (node.dual < eps) {
-                eps = node.dual;
-
-            }
-        }
-        // check minimum slack of the (+, +) edges
-        if (!tree.plusPlusEdges.isEmpty()) {
-            BlossomVEdge edge = tree.plusPlusEdges.findMin().getValue();
-            if (2 * eps > edge.slack) {
-                eps = edge.slack / 2;
-            }
-        }
-        return eps;
+        return tree.getEps_refactoring();
     }
 
     /**

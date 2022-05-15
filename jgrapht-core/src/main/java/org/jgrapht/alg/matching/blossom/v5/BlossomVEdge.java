@@ -331,4 +331,14 @@ class BlossomVEdge
             return currentNode;
         }
     }
+
+	/**
+	 * Adds "best edges" to the  {@code  heap}
+	 * @param heap  the heap for storing best edges
+	 * @param node  infinity node  {@code  bestEdge}  is incident to
+	 */
+	public void addToHead_refactoring(AddressableHeap<Double, BlossomVEdge> heap, BlossomVNode node) {
+		this.handle = heap.insert(this.slack, this);
+		node.bestEdge = this;
+	}
 }

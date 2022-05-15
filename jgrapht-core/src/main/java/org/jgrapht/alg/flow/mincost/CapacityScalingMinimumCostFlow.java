@@ -594,10 +594,7 @@ public class CapacityScalingMinimumCostFlow<V, E>
     }
 
 	private void end_refactoring(CapacityScalingMinimumCostFlow.Node end, int valueToAugment) {
-		for (Arc arc = end.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
-			valueToAugment = Math.min(valueToAugment, arc.residualCapacity);
-		}
-		end.excess += valueToAugment;
+		end.end_refactoring(valueToAugment);
 	}
 
     /**
@@ -783,6 +780,13 @@ public class CapacityScalingMinimumCostFlow<V, E>
         {
             return String.format("Id = %d, excess = %d, potential = %.1f", id, excess, potential);
         }
+
+		public void end_refactoring(int valueToAugment) {
+			for (Arc arc = this.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
+				valueToAugment = Math.min(valueToAugment, arc.residualCapacity);
+			}
+			this.excess += valueToAugment;
+		}
     }
 
     /**
