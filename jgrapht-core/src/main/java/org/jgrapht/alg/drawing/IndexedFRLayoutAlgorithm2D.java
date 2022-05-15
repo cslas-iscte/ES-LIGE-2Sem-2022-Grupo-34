@@ -146,17 +146,16 @@ public class IndexedFRLayoutAlgorithm2D<V, E>
             Deque<Node> queue = new ArrayDeque<>();
             queue.add(quadTree.getRoot());
 
-            while (!queue.isEmpty()) {
+            vDisp = vDisp_refactoring(origin, vPos, vDisp, queue);
+			while (!queue.isEmpty()) {
                 Node node = queue.removeFirst();
                 Box2D box = node.getBox();
                 double boxWidth = box.getWidth();
 
-                Point2D uPos = null;
                 if (node.isLeaf()) {
                     if (!node.hasPoints()) {
                         continue;
                     }
-                    uPos = Points.subtract(node.getPoints().iterator().next(), origin);
                 } else {
                     double distanceToCentroid =
                         Points.length(Points.subtract(vPos, node.getCentroid()));
@@ -164,7 +163,6 @@ public class IndexedFRLayoutAlgorithm2D<V, E>
                         savedComparisons += node.getNumberOfPoints() - 1;
                         continue;
                     } else if (comparator.compare(boxWidth / distanceToCentroid, theta) < 0) {
-                        uPos = Points.subtract(node.getCentroid(), origin);
                         savedComparisons += node.getNumberOfPoints() - 1;
                     } else {
                         for (Node child : node.getChildren()) {
@@ -173,22 +171,60 @@ public class IndexedFRLayoutAlgorithm2D<V, E>
                         continue;
                     }
                 }
-
-                if (comparator.compare(vPos.getX(), uPos.getX()) != 0
-                    || comparator.compare(vPos.getY(), uPos.getY()) != 0)
-                {
-                    Point2D delta = Points.subtract(vPos, uPos);
-                    double deltaLen = Points.length(delta);
-                    Point2D dispContribution =
-                        Points.scalarMultiply(delta, repulsiveForce(deltaLen) / deltaLen);
-                    vDisp = Points.add(vDisp, dispContribution);
-                }
             }
 
             disp.put(v, vDisp);
         }
         return disp;
     }
+
+	private Point2D vDisp_refactoring(Point2D origin, Point2D vPos, Point2D vDisp, Deque<FRQuadTree.Node> queue) {
+		while (!queue.isEmpty()) {
+			Point2D uPos = uPos_refactoring(origin, vPos, queue);
+			Node node = queue.removeFirst();
+			Box2D box = node.getBox();
+			double boxWidth = box.getWidth();
+			if (node.isLeaf()) {
+				if (!node.hasPoints()) {
+					continue;
+				}
+			} else {
+				double distanceToCentroid = Points.length(Points.subtract(vPos, node.getCentroid()));
+				if (comparator.compare(distanceToCentroid, 0d) == 0) {
+					continue;
+				} else if (comparator.compare(boxWidth / distanceToCentroid, theta) < 0) {
+				} else {
+					continue;
+				}
+			}
+			if (comparator.compare(vPos.getX(), uPos.getX()) != 0
+					|| comparator.compare(vPos.getY(), uPos.getY()) != 0) {
+				Point2D delta = Points.subtract(vPos, uPos);
+				double deltaLen = Points.length(delta);
+				Point2D dispContribution = Points.scalarMultiply(delta, repulsiveForce(deltaLen) / deltaLen);
+				vDisp = Points.add(vDisp, dispContribution);
+			}
+		}
+		return vDisp;
+	}
+
+	private Point2D uPos_refactoring(Point2D origin, Point2D vPos, Deque<FRQuadTree.Node> queue) {
+		Node node = queue.removeFirst();
+		Box2D box = node.getBox();
+		double boxWidth = box.getWidth();
+		Point2D uPos = null;
+		if (node.isLeaf()) {
+			uPos = Points.subtract(node.getPoints().iterator().next(), origin);
+		} else {
+			double distanceToCentroid = Points.length(Points.subtract(vPos, node.getCentroid()));
+			if (comparator.compare(distanceToCentroid, 0d) == 0) {
+			} else if (comparator.compare(boxWidth / distanceToCentroid, theta) < 0) {
+				uPos = Points.subtract(node.getCentroid(), origin);
+			} else {
+			}
+		}
+		return uPos;
+	}
 
     /**
      * Get the total number of saved comparisons due to the Barnes-Hut technique.

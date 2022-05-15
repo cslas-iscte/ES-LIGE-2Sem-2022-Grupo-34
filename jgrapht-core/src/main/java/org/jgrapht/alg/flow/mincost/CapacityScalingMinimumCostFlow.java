@@ -350,20 +350,8 @@ public class CapacityScalingMinimumCostFlow<V, E>
             } else if (node == opposite) {
                 throw new IllegalArgumentException("Self-loops aren't allowed");
             }
-            // remove non-zero lower capacity
-            node.excess -= lowerCap;
-            opposite.excess += lowerCap;
-            if (cost < 0) {
-                // removing negative edge costs
-                node.excess -= upperCap - lowerCap;
-                opposite.excess += upperCap - lowerCap;
-                Node t = node;
-                node = opposite;
-                opposite = t;
-                cost *= -1;
-            }
-            arcs[i] = node.addArcTo(opposite, upperCap - lowerCap, cost);
-            if (DEBUG) {
+            opposite_refactoring(i, node, opposite, upperCap, lowerCap, cost);
+			if (DEBUG) {
                 System.out.println(arcs[i]);
             }
             ++i;
@@ -375,6 +363,21 @@ public class CapacityScalingMinimumCostFlow<V, E>
             }
         }
     }
+
+	private void opposite_refactoring(int i, CapacityScalingMinimumCostFlow.Node node,
+			CapacityScalingMinimumCostFlow.Node opposite, int upperCap, int lowerCap, double cost) {
+		node.excess -= lowerCap;
+		opposite.excess += lowerCap;
+		if (cost < 0) {
+			node.excess -= upperCap - lowerCap;
+			opposite.excess += upperCap - lowerCap;
+			Node t = node;
+			node = opposite;
+			opposite = t;
+			cost *= -1;
+		}
+		arcs[i] = node.addArcTo(opposite, upperCap - lowerCap, cost);
+	}
 
     /**
      * Returns the largest magnitude of any supply/demand or finite arc capacity.
@@ -568,7 +571,8 @@ public class CapacityScalingMinimumCostFlow<V, E>
     {
         // compute delta to augment
         int valueToAugment = Math.min(start.excess, -end.excess);
-        for (Arc arc = end.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
+        end_refactoring(end, valueToAugment);
+		for (Arc arc = end.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
             valueToAugment = Math.min(valueToAugment, arc.residualCapacity);
         }
         if (DEBUG) {
@@ -583,13 +587,18 @@ public class CapacityScalingMinimumCostFlow<V, E>
             }
             System.out.println(stack.get(0).id + ", delta = " + valueToAugment);
         }
-        // augmenting the flow
-        end.excess += valueToAugment;
         for (Arc arc = end.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
             arc.sendFlow(valueToAugment);
         }
         start.excess -= valueToAugment;
     }
+
+	private void end_refactoring(CapacityScalingMinimumCostFlow.Node end, int valueToAugment) {
+		for (Arc arc = end.parentArc; arc != null; arc = arc.revArc.head.parentArc) {
+			valueToAugment = Math.min(valueToAugment, arc.residualCapacity);
+		}
+		end.excess += valueToAugment;
+	}
 
     /**
      * Finishes the computation by checking the flow feasibility, computing arc flows, and creating
@@ -620,12 +629,18 @@ public class CapacityScalingMinimumCostFlow<V, E>
                 flowOnArc = problem.getArcCapacityUpperBounds().apply(graphEdge)
                     - problem.getArcCapacityLowerBounds().apply(graphEdge) - flowOnArc;
             }
-            flowOnArc += problem.getArcCapacityLowerBounds().apply(graphEdge);
+            totalCost = totalCost_refactoring(totalCost, graphEdge, flowOnArc);
+			flowOnArc += problem.getArcCapacityLowerBounds().apply(graphEdge);
             flowMap.put(graphEdge, flowOnArc);
-            totalCost += flowOnArc * problem.getGraph().getEdgeWeight(graphEdge);
         }
         return new MinimumCostFlowImpl<>(totalCost, flowMap);
     }
+
+	private double totalCost_refactoring(double totalCost, E graphEdge, double flowOnArc) {
+		flowOnArc += problem.getArcCapacityLowerBounds().apply(graphEdge);
+		totalCost += flowOnArc * problem.getGraph().getEdgeWeight(graphEdge);
+		return totalCost;
+	}
 
     /**
      * Tests the optimality conditions after a flow of minimum cost has been computed.

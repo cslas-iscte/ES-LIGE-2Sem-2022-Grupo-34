@@ -222,10 +222,10 @@ public class BoykovKolmogorovMFImpl<V, E>
     private void augmentShortPaths(VertexExtension source, VertexExtension sink)
     {
         for (AnnotatedFlowEdge sourceEdge : source.getOutgoing()) {
-            VertexExtension mediumVertex = sourceEdge.getTarget();
+            sourceEdge_refactoring(sink, sourceEdge);
+			VertexExtension mediumVertex = sourceEdge.getTarget();
             if (mediumVertex == sink) {
                 double flow = sourceEdge.getResidualCapacity();
-                pushFlowThrough(sourceEdge, flow);
                 maxFlowValue += flow;
             } else {
                 for (AnnotatedFlowEdge sinkEdge : mediumVertex.getOutgoing()) {
@@ -233,8 +233,6 @@ public class BoykovKolmogorovMFImpl<V, E>
                     if (targetVertex == sink) {
                         double flow = Math
                             .min(sourceEdge.getResidualCapacity(), sinkEdge.getResidualCapacity());
-                        pushFlowThrough(sourceEdge, flow);
-                        pushFlowThrough(sinkEdge, flow);
                         maxFlowValue += flow;
                     }
                     // if all the capacity of the source edge was used,
@@ -246,6 +244,27 @@ public class BoykovKolmogorovMFImpl<V, E>
             }
         }
     }
+
+	private void sourceEdge_refactoring(BoykovKolmogorovMFImpl<V, E>.VertexExtension sink,
+			MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge sourceEdge) {
+		VertexExtension mediumVertex = sourceEdge.getTarget();
+		if (mediumVertex == sink) {
+			double flow = sourceEdge.getResidualCapacity();
+			pushFlowThrough(sourceEdge, flow);
+		} else {
+			for (AnnotatedFlowEdge sinkEdge : mediumVertex.getOutgoing()) {
+				VertexExtension targetVertex = sinkEdge.getTarget();
+				if (targetVertex == sink) {
+					double flow = Math.min(sourceEdge.getResidualCapacity(), sinkEdge.getResidualCapacity());
+					pushFlowThrough(sourceEdge, flow);
+					pushFlowThrough(sinkEdge, flow);
+				}
+				if (!sourceEdge.hasCapacity()) {
+					break;
+				}
+			}
+		}
+	}
 
     /**
      * Performs an algorithm grow phase.
@@ -548,13 +567,13 @@ public class BoykovKolmogorovMFImpl<V, E>
                 AnnotatedFlowEdge newParentEdge = null;
                 int minDistance = Integer.MAX_VALUE;
                 for (AnnotatedFlowEdge edge : currentVertex.getOutgoing()) {
-                    if (edge.hasCapacity()) {
+                    newParentEdge = newParentEdge_refactoring(newParentEdge, minDistance, edge);
+					if (edge.hasCapacity()) {
                         VertexExtension targetNode = edge.getTarget();
 
                         if (targetNode.isSinkTreeVertex() && hasConnectionToTerminal(targetNode)) {
                             if (targetNode.distance < minDistance) {
                                 minDistance = targetNode.distance;
-                                newParentEdge = edge;
                             }
                         }
                     }
@@ -599,6 +618,20 @@ public class BoykovKolmogorovMFImpl<V, E>
             }
         }
     }
+
+	private MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge newParentEdge_refactoring(
+			MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge newParentEdge, int minDistance,
+			MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge edge) {
+		if (edge.hasCapacity()) {
+			VertexExtension targetNode = edge.getTarget();
+			if (targetNode.isSinkTreeVertex() && hasConnectionToTerminal(targetNode)) {
+				if (targetNode.distance < minDistance) {
+					newParentEdge = edge;
+				}
+			}
+		}
+		return newParentEdge;
+	}
 
 	private BoykovKolmogorovMFImpl<V, E>.VertexExtension targetVertex_refactoring(
 			MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge edge) {
@@ -713,18 +746,20 @@ public class BoykovKolmogorovMFImpl<V, E>
             distance++;
         }
 
-        // update distance and timestamp values for every path vertex
-        for (VertexExtension currentVertex = vertex; !wasCheckedInThisIteration(currentVertex);
-            currentVertex = currentVertex.getParent())
-        {
-
-            currentVertex.distance = distance;
-            distance--;
-            makeCheckedInThisIteration(currentVertex);
-        }
-
-        return true;
+        BoykovKolmogorovMFImpl<V, E>.VertexExtension currentVertex = currentVertex_refactoring(vertex, distance);
+		return true;
     }
+
+	private BoykovKolmogorovMFImpl<V, E>.VertexExtension currentVertex_refactoring(
+			BoykovKolmogorovMFImpl<V, E>.VertexExtension vertex, int distance) {
+		for (VertexExtension currentVertex = vertex; !wasCheckedInThisIteration(
+				currentVertex); currentVertex = currentVertex.getParent()) {
+			currentVertex.distance = distance;
+			distance--;
+			makeCheckedInThisIteration(currentVertex);
+		}
+		return currentVertex_refactoring(null, 0);
+	}
 
     /**
      * Checks if the vertex {@code p} is closer to terminal than the vertex {@code t} using the

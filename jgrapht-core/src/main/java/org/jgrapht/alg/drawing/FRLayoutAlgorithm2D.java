@@ -289,23 +289,24 @@ public class FRLayoutAlgorithm2D<V, E>
                 if (v.equals(u)) {
                     continue;
                 }
-                Point2D uPos = Points.subtract(model.get(u), origin);
-
-                if (comparator.compare(vPos.getX(), uPos.getX()) != 0
-                    || comparator.compare(vPos.getY(), uPos.getY()) != 0)
-                {
-                    Point2D delta = Points.subtract(vPos, uPos);
-                    double deltaLen = Points.length(delta);
-                    Point2D dispContribution =
-                        Points.scalarMultiply(delta, repulsiveForce(deltaLen) / deltaLen);
-                    vDisp = Points.add(vDisp, dispContribution);
-                }
+                vDisp = vDisp_refactoring(model, origin, vPos, vDisp, u);
             }
 
             disp.put(v, vDisp);
         }
         return disp;
     }
+
+	private <V> Point2D vDisp_refactoring(LayoutModel2D<V> model, Point2D origin, Point2D vPos, Point2D vDisp, V u) {
+		Point2D uPos = Points.subtract(model.get(u), origin);
+		if (comparator.compare(vPos.getX(), uPos.getX()) != 0 || comparator.compare(vPos.getY(), uPos.getY()) != 0) {
+			Point2D delta = Points.subtract(vPos, uPos);
+			double deltaLen = Points.length(delta);
+			Point2D dispContribution = Points.scalarMultiply(delta, repulsiveForce(deltaLen) / deltaLen);
+			vDisp = Points.add(vDisp, dispContribution);
+		}
+		return vDisp;
+	}
 
     /**
      * Calculate the repulsive forces between vertices connected with edges.
