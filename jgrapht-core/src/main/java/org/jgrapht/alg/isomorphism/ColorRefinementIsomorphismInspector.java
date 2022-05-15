@@ -163,18 +163,8 @@ public class ColorRefinementIsomorphismInspector<V, E>
             return isIsomorphic;
         }
 
-        Graph<DistinctGraphObject<V, V, E>, DistinctGraphObject<E, V, E>> graph =
-            getDisjointGraphUnion(graph1, graph2);
-        ColorRefinementAlgorithm<DistinctGraphObject<V, V, E>,
-            DistinctGraphObject<E, V, E>> colorRefinementAlgorithm =
-                new ColorRefinementAlgorithm<>(graph);
-
-        // execute color refinement for graph
-        Coloring<DistinctGraphObject<V, V, E>> coloring = colorRefinementAlgorithm.getColoring();
-
-        isomorphismTestExecuted = true;
-
-        isIsomorphic = coarseColoringAreEqual(coloring);
+        ColorRefinementAlgorithm<ColorRefinementIsomorphismInspector.DistinctGraphObject<V, V, E>, ColorRefinementIsomorphismInspector.DistinctGraphObject<E, V, E>> colorRefinementAlgorithm = colorRefinementAlgorithm_refactoring();
+		isomorphismTestExecuted = true;
 
         if (isIsomorphic) {
             assert isomorphicGraphMapping.isValidIsomorphism();
@@ -182,6 +172,16 @@ public class ColorRefinementIsomorphismInspector<V, E>
 
         return isIsomorphic;
     }
+
+	private ColorRefinementAlgorithm<ColorRefinementIsomorphismInspector.DistinctGraphObject<V, V, E>, ColorRefinementIsomorphismInspector.DistinctGraphObject<E, V, E>> colorRefinementAlgorithm_refactoring()
+			throws IsomorphismUndecidableException {
+		Graph<DistinctGraphObject<V, V, E>, DistinctGraphObject<E, V, E>> graph = getDisjointGraphUnion(graph1, graph2);
+		ColorRefinementAlgorithm<DistinctGraphObject<V, V, E>, DistinctGraphObject<E, V, E>> colorRefinementAlgorithm = new ColorRefinementAlgorithm<>(
+				graph);
+		Coloring<DistinctGraphObject<V, V, E>> coloring = colorRefinementAlgorithm.getColoring();
+		isIsomorphic = coarseColoringAreEqual(coloring);
+		return colorRefinementAlgorithm;
+	}
 
     /**
      * Returns whether the coarse colorings of the two given graphs are discrete. This method is
