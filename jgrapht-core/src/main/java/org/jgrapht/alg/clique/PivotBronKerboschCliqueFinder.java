@@ -88,17 +88,21 @@ public class PivotBronKerboschCliqueFinder<V, E>
             }
             allMaximalCliques = new ArrayList<>();
 
-            long nanosTimeLimit;
-            try {
-                nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
-            } catch (ArithmeticException ignore) {
-                nanosTimeLimit = Long.MAX_VALUE;
-            }
-
-            findCliques(
+            long nanosTimeLimit = nanosTimeLimit_Refactoring();
+			findCliques(
                 new HashSet<>(graph.vertexSet()), new HashSet<>(), new HashSet<>(), nanosTimeLimit);
         }
     }
+
+	private long nanosTimeLimit_Refactoring() {
+		long nanosTimeLimit;
+		try {
+			nanosTimeLimit = Math.addExact(System.nanoTime(), nanos);
+		} catch (ArithmeticException ignore) {
+			nanosTimeLimit = Long.MAX_VALUE;
+		}
+		return nanosTimeLimit;
+	}
 
     /**
      * Choose a pivot.

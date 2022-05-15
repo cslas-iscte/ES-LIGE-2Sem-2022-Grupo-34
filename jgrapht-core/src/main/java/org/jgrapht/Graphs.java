@@ -394,18 +394,18 @@ public abstract class Graphs
     /**
      * Gets the vertex opposite another vertex across an edge.
      *
-     * @param g graph containing e and v
-     * @param e edge in g
+     * @param graph graph containing e and v
+     * @param edge edge in g
      * @param v vertex in g
      * @param <V> the graph vertex type
      * @param <E> the graph edge type
      *
      * @return vertex opposite to v across e
      */
-    public static <V, E> V getOppositeVertex(Graph<V, E> g, E e, V v)
+    public static <V, E> V getOppositeVertex(Graph<V, E> graph, E edge, V v)
     {
-        V source = g.getEdgeSource(e);
-        V target = g.getEdgeTarget(e);
+        V source = graph.getEdgeSource(edge);
+        V target = graph.getEdgeTarget(edge);
         if (v.equals(source)) {
             return target;
         } else if (v.equals(target)) {

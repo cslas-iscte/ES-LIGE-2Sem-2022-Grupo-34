@@ -161,8 +161,8 @@ public class CliqueMinimalSeparatorDecomposition<V, E>
                     for (V z : Graphs.neighborListOf(gprime, y)) {
                         if (!reached.contains(z)) {
                             reached.add(z);
-                            if (vertexLabels.get(z) > j) {
-                                neighborsY.add(z);
+                            neighborsY_Refactoring(vertexLabels, neighborsY, j, z);
+							if (vertexLabels.get(z) > j) {
                                 E fillEdge = graph.getEdgeSupplier().get();
                                 fillEdges.add(fillEdge);
                                 addToReach(vertexLabels.get(z), z, reach);
@@ -184,6 +184,14 @@ public class CliqueMinimalSeparatorDecomposition<V, E>
             vertexLabels.remove(v);
         }
     }
+
+	@SuppressWarnings("hiding")
+	private <V> void neighborsY_Refactoring(final Map<V, Integer> vertexLabels, LinkedList<V> neighborsY, int j, V z) {
+		if (vertexLabels.get(z) > j) {
+			neighborsY.add(z);
+		} else {
+		}
+	}
 
     /**
      * Get the vertex with the maximal label.

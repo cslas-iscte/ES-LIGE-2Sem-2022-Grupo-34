@@ -131,11 +131,8 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E>
                 V targetVertex = graph.getEdgeTarget(e);
                 // catch self-loops directly
                 if (sourceVertex == targetVertex) {
-                    ArrayList<V> vertices = new ArrayList<>();
-                    vertices.add(sourceVertex);
-                    vertices.add(targetVertex);
-
-                    double currentEdgeWeight = graph.getEdgeWeight(e);
+                    ArrayList<V> vertices = vertices_Refactoring(sourceVertex, targetVertex);
+					double currentEdgeWeight = graph.getEdgeWeight(e);
                     double oppositeEdgeWeight =
                         graph.getEdgeWeight(graph.getEdge(targetVertex, sourceVertex));
                     if (bestImprovement) {
@@ -151,13 +148,9 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E>
                     }
                 }
                 if (!labelMap.get(sourceVertex).equals(labelMap.get(targetVertex))) {
-                    ArrayList<V> pathVertices = new ArrayList<>(lengthBound);
-                    HashSet<Integer> pathLabels = new HashSet<>();
-                    pathVertices.add(sourceVertex);
-                    pathVertices.add(targetVertex);
-                    pathLabels.add(labelMap.get(sourceVertex));
-                    pathLabels.add(labelMap.get(targetVertex));
-                    LabeledPath<V> path =
+                    ArrayList<V> pathVertices = pathVertices_Refactoring(sourceVertex, targetVertex);
+					HashSet<Integer> pathLabels = pathLabels_Refactoring(sourceVertex, targetVertex);
+					LabeledPath<V> path =
                         new LabeledPath<>(pathVertices, graph.getEdgeWeight(e), pathLabels);
 
                     // add path to set of paths of length 1
@@ -225,6 +218,27 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E>
 
         return new GraphWalk<>(graph, bestCycle.vertices, bestCycle.cost);
     }
+
+	private ArrayList<V> pathVertices_Refactoring(V sourceVertex, V targetVertex) {
+		ArrayList<V> pathVertices = new ArrayList<>(lengthBound);
+		pathVertices.add(sourceVertex);
+		pathVertices.add(targetVertex);
+		return pathVertices;
+	}
+
+	private HashSet<Integer> pathLabels_Refactoring(V sourceVertex, V targetVertex) {
+		HashSet<Integer> pathLabels = new HashSet<>();
+		pathLabels.add(labelMap.get(sourceVertex));
+		pathLabels.add(labelMap.get(targetVertex));
+		return pathLabels;
+	}
+
+	private ArrayList<V> vertices_Refactoring(V sourceVertex, V targetVertex) {
+		ArrayList<V> vertices = new ArrayList<>();
+		vertices.add(sourceVertex);
+		vertices.add(targetVertex);
+		return vertices;
+	}
 
     /**
      * Checks whether <code>path</code> dominates the current minimal cost path with the same head,
@@ -304,7 +318,8 @@ public class AhujaOrlinSharmaCyclicExchangeLocalAugmentation<V, E>
      * @author Christoph Grüne
      * @since June 7, 2018
      */
-    private class LabeledPath<V>
+    @SuppressWarnings("hiding")
+	private class LabeledPath<V>
         implements
         Cloneable
     {
