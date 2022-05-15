@@ -374,7 +374,8 @@ public class BoykovKolmogorovMFImpl<V, E>
      */
     private void augment(AnnotatedFlowEdge boundingEdge)
     {
-        double bottleneck = findBottleneck(boundingEdge);
+        boundingEdge_refactoring(boundingEdge);
+		double bottleneck = findBottleneck(boundingEdge);
 
         if (DEBUG) {
             Deque<AnnotatedFlowEdge> pathEdges = new ArrayDeque<>();
@@ -400,8 +401,6 @@ public class BoykovKolmogorovMFImpl<V, E>
             }
             System.out.println("\n");
         }
-
-        pushFlowThrough(boundingEdge, bottleneck);
 
         // pushing flow through source tree part of the path
         VertexExtension source = boundingEdge.getSource();
@@ -433,6 +432,11 @@ public class BoykovKolmogorovMFImpl<V, E>
 
         maxFlowValue += bottleneck;
     }
+
+	private void boundingEdge_refactoring(MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge boundingEdge) {
+		double bottleneck = findBottleneck(boundingEdge);
+		pushFlowThrough(boundingEdge, bottleneck);
+	}
 
     /**
      * Finds augmenting path bottleneck by traversing the path edges.
@@ -513,11 +517,8 @@ public class BoykovKolmogorovMFImpl<V, E>
                     currentVertex.treeStatus = VertexTreeStatus.FREE_VERTEX;
 
                     for (AnnotatedFlowEdge edge : currentVertex.getOutgoing()) {
-                        VertexExtension targetVertex = edge.getTarget();
-                        if (targetVertex.isSourceTreeVertex()) {
-                            if (edge.getInverse().hasCapacity()) {
-                                makeActive(targetVertex);
-                            }
+                        BoykovKolmogorovMFImpl<V, E>.VertexExtension targetVertex = targetVertex_refactoring(edge);
+						if (targetVertex.isSourceTreeVertex()) {
                             if (targetVertex.parentEdge == edge) {
                                 // target vertex is a child of the current vertex
                                 targetVertex.makeOrphan();
@@ -598,6 +599,17 @@ public class BoykovKolmogorovMFImpl<V, E>
             }
         }
     }
+
+	private BoykovKolmogorovMFImpl<V, E>.VertexExtension targetVertex_refactoring(
+			MaximumFlowAlgorithmBase<V, E>.AnnotatedFlowEdge edge) {
+		VertexExtension targetVertex = edge.getTarget();
+		if (targetVertex.isSourceTreeVertex()) {
+			if (edge.getInverse().hasCapacity()) {
+				makeActive(targetVertex);
+			}
+		}
+		return targetVertex;
+	}
 
     /**
      * Initializes a new algorithm iteration.

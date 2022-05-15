@@ -128,11 +128,17 @@ public class ChordalGraphColoring<V, E>
         Map<V, Integer> vertexInOrder =
             CollectionUtil.newHashMapWithExpectedSize(vertexOrder.size());
         int i = 0;
-        for (V vertex : vertexOrder) {
-            vertexInOrder.put(vertex, i++);
-        }
-        return vertexInOrder;
+        i = i_Refactoring(vertexOrder, vertexInOrder, i);
+		return vertexInOrder;
     }
+
+	@SuppressWarnings("hiding")
+	private <V> int i_Refactoring(List<V> vertexOrder, Map<V, Integer> vertexInOrder, int i) {
+		for (V vertex : vertexOrder) {
+			vertexInOrder.put(vertex, i++);
+		}
+		return i;
+	}
 
     /**
      * Returns the predecessors of {@code vertex} in the order defined by {@code map}. More

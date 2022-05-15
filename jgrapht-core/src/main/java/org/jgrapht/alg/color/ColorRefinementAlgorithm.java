@@ -169,14 +169,21 @@ public class ColorRefinementAlgorithm<V, E>
      */
     private void cleanupColorDegrees(Set<Integer> adjacentColors, ColoringRepresentation rep)
     {
-        for (int c : adjacentColors) {
+        rep_Refactoring(adjacentColors, rep);
+		for (int c : adjacentColors) {
             for (V v : rep.positiveDegreeColorClasses.get(c)) {
                 rep.colorDegree.put(v, 0);
             }
-            rep.maxColorDegree[c] = 0;
             rep.positiveDegreeColorClasses.set(c, new ArrayList<>());
         }
     }
+
+	private void rep_Refactoring(Set<Integer> adjacentColors,
+			ColorRefinementAlgorithm<V, E>.ColoringRepresentation rep) {
+		for (int c : adjacentColors) {
+			rep.maxColorDegree[c] = 0;
+		}
+	}
 
     /**
      * Helper method for splitting up a color.
@@ -200,31 +207,20 @@ public class ColorRefinementAlgorithm<V, E>
             numColorDegree[degree] += 1;
         }
 
-        // Helper variable storing the index with the maximum number of vertices with the
-        // corresponding color degree
-        int maxColorDegreeIndex = 0;
-        for (int i = 1; i <= maxColorDegree; ++i) {
-            if (numColorDegree[i] > numColorDegree[maxColorDegreeIndex]) {
-                maxColorDegreeIndex = i;
-            }
-        }
-
-        // Go through all indices (color degrees) of numColorDegree
+        int maxColorDegreeIndex = maxColorDegreeIndex_Refactoring(maxColorDegree, numColorDegree);
+		// Go through all indices (color degrees) of numColorDegree
         int[] newMapping = new int[maxColorDegree + 1];
         boolean isCurrentColorInStack = refineStack.contains(color);
         for (int i = 0; i <= maxColorDegree; ++i) {
-            if (numColorDegree[i] >= 1) {
+            newMapping = newMapping_Refactoring(color, rep, numColorDegree, newMapping, i);
+			if (numColorDegree[i] >= 1) {
                 if (i == rep.minColorDegree[color]) {
-                    newMapping[i] = color; // keep current color
-
                     // Push current color on the stack if it is not in the stack and i is not the
                     // index with the maximum number of vertices with the corresponding color degree
                     if (!isCurrentColorInStack && maxColorDegreeIndex != i) {
                         refineStack.push(newMapping[i]);
                     }
                 } else {
-                    newMapping[i] = ++rep.lastUsedColor; // new color
-
                     // Push current color on the stack if it is in the stack and i is not the index
                     // with the maximum number of vertices with the corresponding color degree
                     if (isCurrentColorInStack || i != maxColorDegreeIndex) {
@@ -244,6 +240,28 @@ public class ColorRefinementAlgorithm<V, E>
             }
         }
     }
+
+	private int[] newMapping_Refactoring(Integer color, ColorRefinementAlgorithm<V, E>.ColoringRepresentation rep,
+			int[] numColorDegree, int[] newMapping, int i) {
+		if (numColorDegree[i] >= 1) {
+			if (i == rep.minColorDegree[color]) {
+				newMapping[i] = color;
+			} else {
+				newMapping[i] = ++rep.lastUsedColor;
+			}
+		}
+		return newMapping;
+	}
+
+	private int maxColorDegreeIndex_Refactoring(int maxColorDegree, int[] numColorDegree) {
+		int maxColorDegreeIndex = 0;
+		for (int i = 1; i <= maxColorDegree; ++i) {
+			if (numColorDegree[i] > numColorDegree[maxColorDegreeIndex]) {
+				maxColorDegreeIndex = i;
+			}
+		}
+		return maxColorDegreeIndex;
+	}
 
     /**
      * Checks whether alpha is a valid surjective l-coloring for the given graph
